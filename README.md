@@ -181,6 +181,37 @@ keep its color; the extension logs a warning and changes nothing.
 `force-important` guarantees the overrides beat the base theme regardless of
 stylesheet cascade order. Turn it off if it fights another theming extension.
 
+## Tests
+
+```sh
+make test
+```
+
+Plain `gjs`, no framework. The suite runs against a throwaway `XDG_*` root, so it
+can never touch your real `gtk.css`, icons, or settings — the filesystem suites
+refuse to start if the sandbox isn't set.
+
+```
+colors     29 passed     parsing, OKLCh round-trip, libadwaita agreement
+cssgen     36 passed     extraction, substitution, at-rules, real Shell stylesheet
+gtkexport  18 passed     config writing, user-content preservation, cleanup
+folders    23 passed     icon selection, recoloring, identity invariant, cleanup
+```
+
+The assertions worth knowing about:
+
+- **Foreground rule matches libadwaita.** All nine GNOME accents must resolve to
+  white text, since libadwaita hardcodes `accent_fg_color: white`.
+- **Identity invariant.** Recoloring folder icons to the reference accent
+  reproduces the stock Adwaita icon byte-for-byte.
+- **Gamut clipping never merges shades.** The recolored icon keeps five distinct
+  colors, so the folder's shading can't flatten — checked including pure white
+  and pure black accents.
+- **User content is never destroyed.** Pre-existing `gtk.css` rules and
+  user-placed icon overrides survive both apply and cleanup.
+- **Extraction stays sound against the installed Shell stylesheet**, for light,
+  dark, and high-contrast: braces balanced, no keyword left unresolved.
+
 ## Layout
 
 ```
@@ -192,6 +223,7 @@ more-accent-colors@robbybobby.local/
   lib/gtkexport.js    GTK/libadwaita config writing
   lib/folders.js      folder icon recoloring and icon-theme shadowing
   schemas/            GSettings schema
+tests/                gjs test suite, sandboxed via XDG_*
 ```
 
 `lib/colors.js` is imported by both `extension.js` and `prefs.js`, so it stays

@@ -1,9 +1,13 @@
 UUID = more-accent-colors@robbybobby.local
 ZIP  = $(UUID).shell-extension.zip
 
-.PHONY: all pack install uninstall enable disable prefs reload clean
+.PHONY: all test pack install uninstall enable disable prefs reload clean
 
 all: pack
+
+# Runs against a throwaway XDG root; never touches your real config.
+test:
+	@./tests/run.sh
 
 pack:
 	gnome-extensions pack $(UUID) --extra-source=lib --force -o .
