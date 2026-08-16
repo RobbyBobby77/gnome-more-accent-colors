@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.more-accent-colors"
+          path="/org/gnome/shell/extensions/more-accent-colors/">
+
+    <key name="accent-color" type="s">
+      <default>'system'</default>
+      <summary>Selected accent color</summary>
+      <description>
+        A palette id from lib/colors.js, or 'custom' to use custom-color,
+        or 'system' to leave the GNOME accent color untouched.
+      </description>
+    </key>
+
+    <key name="custom-color" type="s">
+      <default>'#4f46e5'</default>
+      <summary>Custom accent color</summary>
+      <description>Hex color used when accent-color is 'custom'.</description>
+    </key>
+
+    <key name="apply-to-shell" type="b">
+      <default>true</default>
+      <summary>Recolor GNOME Shell</summary>
+    </key>
+
+    <key name="apply-to-gtk4" type="b">
+      <default>true</default>
+      <summary>Recolor libadwaita / GTK4 apps</summary>
+    </key>
+
+    <key name="apply-to-gtk3" type="b">
+      <default>false</default>
+      <summary>Recolor GTK3 apps</summary>
+    </key>
+
+    <key name="apply-to-folders" type="b">
+      <default>true</default>
+      <summary>Recolor folder icons</summary>
+      <description>
+        Writes accent-tinted copies of the folder icons into
+        ~/.local/share/icons, shadowing the system icon theme.
+      </description>
+    </key>
+
+    <key name="force-important" type="b">
+      <default>true</default>
+      <summary>Force override with !important</summary>
+      <description>
+        Marks generated shell declarations !important so they win against
+        the base theme regardless of stylesheet cascade order.
+      </description>
+    </key>
+
+  </schema>
+</schemalist>

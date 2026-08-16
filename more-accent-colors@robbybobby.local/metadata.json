@@ -1,0 +1,10 @@
+{
+  "uuid": "more-accent-colors@robbybobby.local",
+  "name": "More Accent Colors",
+  "description": "Adds extra accent colors beyond the nine GNOME ships with, plus a custom color picker. Recolors GNOME Shell and libadwaita/GTK apps.",
+  "shell-version": ["50"],
+  "session-modes": ["user", "unlock-dialog"],
+  "settings-schema": "org.gnome.shell.extensions.more-accent-colors",
+  "gettext-domain": "more-accent-colors",
+  "version-name": "1.0.0"
+}
