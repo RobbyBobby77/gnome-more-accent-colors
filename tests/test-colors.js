@@ -5,7 +5,7 @@ import {ok, eq, section, finish} from './harness.js';
 import {
     SYSTEM_COLORS, EXTRA_COLORS, ALL_COLORS,
     parseHex, toHex, oklabLightness, hexToOklch, oklchToHex,
-    foregroundFor, standaloneExpr, resolveSelection,
+    foregroundFor, standaloneExpr, resolveSelection, nearestSystemAccent,
 } from '../more-accent-colors@robbybobby.local/lib/colors.js';
 
 section('parsing');
@@ -65,6 +65,23 @@ eq('light clamps lightness down',
     standaloneExpr('#4f46e5', false), 'oklab(from #4f46e5 min(l, 0.5) a b)');
 eq('dark clamps lightness up',
     standaloneExpr('#4f46e5', true), 'oklab(from #4f46e5 max(l, 0.85) a b)');
+
+section('nearest system accent');
+// Apps that read the accent programmatically can only be handed one of the nine.
+for (const {id, hex} of SYSTEM_COLORS)
+    eq(`${id} maps to itself`, nearestSystemAccent(hex), id);
+// indigo sits at hue 277, between blue (255) and purple (317), and lands on blue.
+eq('indigo -> blue', nearestSystemAccent('#4f46e5'), 'blue');
+eq('violet -> purple', nearestSystemAccent('#7c3aed'), 'purple');
+eq('crimson -> red', nearestSystemAccent('#c01c28'), 'red');
+eq('mint -> green', nearestSystemAccent('#2fb98a'), 'green');
+eq('turquoise -> teal', nearestSystemAccent('#0eaaa0'), 'teal');
+eq('gold -> yellow', nearestSystemAccent('#bf9b30'), 'yellow');
+eq('coral -> orange', nearestSystemAccent('#f2643f'), 'orange');
+eq('graphite -> slate', nearestSystemAccent('#5b5b66'), 'slate');
+ok('always returns one of the nine',
+    EXTRA_COLORS.every(c => SYSTEM_COLORS.some(s => s.id === nearestSystemAccent(c.hex))));
+eq('invalid input is inert', nearestSystemAccent('nonsense'), null);
 
 section('selection resolution');
 eq('system means hands off', resolveSelection('system', '#123456'), null);

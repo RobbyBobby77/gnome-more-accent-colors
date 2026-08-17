@@ -42,6 +42,24 @@
       </description>
     </key>
 
+    <key name="sync-system-accent" type="b">
+      <default>true</default>
+      <summary>Match the closest system accent</summary>
+      <description>
+        Sets org.gnome.desktop.interface accent-color to the nearest of GNOME's
+        nine built-in accents. Apps that read the accent programmatically rather
+        than from CSS - and Flatpak apps, which cannot see our gtk.css - only
+        ever see that enum, so this keeps them approximately in step. The
+        original value is restored when the extension is disabled.
+      </description>
+    </key>
+
+    <key name="saved-system-accent" type="s">
+      <default>''</default>
+      <summary>The user's accent-color before we changed it</summary>
+      <description>Internal. Empty when we have not overridden it.</description>
+    </key>
+
     <key name="force-important" type="b">
       <default>true</default>
       <summary>Force override with !important</summary>

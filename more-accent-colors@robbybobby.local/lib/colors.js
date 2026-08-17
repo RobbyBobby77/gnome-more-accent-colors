@@ -173,6 +173,37 @@ export function standaloneExpr(hex, dark) {
     return `oklab(from ${hex} ${clamp} a b)`;
 }
 
+/**
+ * The closest of GNOME's nine built-in accents, by Euclidean distance in OKLab.
+ *
+ * Some apps never look at the stylesheet - they call
+ * adw_style_manager_get_accent_color(), or read the org.freedesktop.appearance
+ * accent-color portal key, both of which resolve from the GSettings enum rather
+ * than from CSS. Flatpak apps cannot read our gtk.css at all. Those consumers
+ * can only ever be given one of the nine, so we hand them the nearest match
+ * instead of leaving them on an unrelated color.
+ */
+export function nearestSystemAccent(hex) {
+    const rgb = parseHex(hex);
+    if (!rgb)
+        return null;
+
+    const target = rgbToOklab(rgb);
+    let best = null;
+    let bestDistance = Infinity;
+
+    for (const candidate of SYSTEM_COLORS) {
+        const c = rgbToOklab(parseHex(candidate.hex));
+        const distance =
+            (target.L - c.L) ** 2 + (target.a - c.a) ** 2 + (target.b - c.b) ** 2;
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            best = candidate.id;
+        }
+    }
+    return best;
+}
+
 /** Resolve the settings pair (accent-color, custom-color) to a hex, or null for "system". */
 export function resolveSelection(id, customHex) {
     if (id === 'system')

@@ -193,6 +193,40 @@ export default class MoreAccentColorsPreferences extends ExtensionPreferences {
         }
 
         // -- Advanced ---------------------------------------------------------
+        const reach = new Adw.PreferencesGroup({
+            title: 'Other apps',
+            description: 'Some apps never read the stylesheet, so they need help.',
+        });
+        page.add(reach);
+
+        const syncRow = new Adw.SwitchRow({
+            title: 'Match the closest system accent',
+            subtitle: 'Apps that read the accent directly — and Flatpak apps, which ' +
+                "can't see this extension's CSS — only ever get one of GNOME's nine. " +
+                'This points that setting at the nearest match, and restores it on disable.',
+        });
+        settings.bind('sync-system-accent', syncRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        reach.add(syncRow);
+
+        const flatpakRow = new Adw.ActionRow({
+            title: 'Flatpak apps need one-time permission',
+            subtitle: 'flatpak override --user --filesystem=xdg-config/gtk-4.0:ro',
+        });
+        const copyButton = new Gtk.Button({
+            icon_name: 'edit-copy-symbolic',
+            valign: Gtk.Align.CENTER,
+            tooltip_text: 'Copy command',
+            css_classes: ['flat'],
+        });
+        copyButton.connect('clicked', () => {
+            Gdk.Display.get_default()?.get_clipboard()
+                .set('flatpak override --user --filesystem=xdg-config/gtk-4.0:ro');
+            copyButton.icon_name = 'object-select-symbolic';
+        });
+        flatpakRow.add_suffix(copyButton);
+        flatpakRow.activatable_widget = copyButton;
+        reach.add(flatpakRow);
+
         const advanced = new Adw.PreferencesGroup({title: 'Advanced'});
         const importantRow = new Adw.SwitchRow({
             title: 'Force override',

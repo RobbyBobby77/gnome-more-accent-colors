@@ -52,13 +52,16 @@ greyed out until then.
 
 ### Updating
 
-Code changes only need a re-enable; no logout:
-
 ```sh
 make install
-gnome-extensions disable more-accent-colors@robbybobby.local
-gnome-extensions enable  more-accent-colors@robbybobby.local
 ```
+
+Then **log out and back in**. GNOME Shell caches extension code as an ES module
+for the life of the process, so `disable`/`enable` re-runs `enable()` on the
+*old* code — it does not re-read the files. On Wayland the Shell cannot restart
+in place, so a new login is the only way to load changed code.
+
+Changing colors, on the other hand, is fully live and never needs a logout.
 
 ### Uninstall
 
@@ -121,6 +124,37 @@ its accents, the lightest being yellow at OKLab L=0.674, so this uses white up t
 L=0.70 and dark text above it. All nine system colors come out identical to stock
 GNOME; only genuinely bright custom picks get dark text.
 
+### Apps that don't follow the CSS
+
+Two kinds of app never see the generated stylesheet, and no amount of CSS will
+reach them:
+
+**Apps that read the accent programmatically.** Anything calling
+`adw_style_manager_get_accent_color()`, or reading the
+`org.freedesktop.appearance` `accent-color` portal key, resolves from the
+GSettings enum rather than from CSS. Those APIs can only ever return one of the
+nine, so a tenth color is invisible to them.
+
+**Flatpak apps.** They are sandboxed and cannot read `~/.config/gtk-4.0/gtk.css`
+at all unless granted access:
+
+```sh
+flatpak override --user --filesystem=xdg-config/gtk-4.0:ro
+```
+
+That grants read-only access to just that directory. Without it, Flatpak apps
+fall back to the portal — so they land on the same enum as the first group.
+
+Because both paths bottom out at the same nine-value enum, `sync-system-accent`
+(on by default) points `org.gnome.desktop.interface accent-color` at whichever
+built-in accent is closest to your choice, measured by Euclidean distance in
+OKLab. Pick crimson and those apps get GNOME's red rather than an unrelated
+color. The original value is saved and restored when the extension is disabled.
+
+It is an approximation by construction: apps using the CSS get your exact color,
+apps using the enum get the nearest of nine. Turn it off if you would rather they
+stay on your original system accent.
+
 ### Folder icons
 
 Folder icons aren't styleable — Adwaita draws them as SVGs with a hardcoded blue
@@ -176,6 +210,7 @@ keep its color; the extension logs a warning and changes nothing.
 | `apply-to-gtk4` | `true` | Recolor libadwaita/GTK4 apps |
 | `apply-to-gtk3` | `false` | Recolor GTK3 apps |
 | `apply-to-folders` | `true` | Recolor folder icons |
+| `sync-system-accent` | `true` | Point the system accent enum at the nearest built-in |
 | `force-important` | `true` | Mark generated Shell rules `!important` |
 
 `force-important` guarantees the overrides beat the base theme regardless of

@@ -31,8 +31,10 @@ disable:
 prefs:
 	gnome-extensions prefs $(UUID)
 
-# Pick up code changes without logging out.
-reload: install
+# Re-runs enable() on the code already loaded in the Shell. Useful to re-apply
+# state, but it does NOT pick up edited files: GNOME caches extension code as an
+# ES module for the life of the Shell process. Log out and back in for that.
+reload:
 	-gnome-extensions disable $(UUID)
 	gnome-extensions enable $(UUID)
 

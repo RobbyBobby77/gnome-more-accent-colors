@@ -5,7 +5,7 @@ import St from 'gi://St';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import {buildShellStylesheet} from './lib/cssgen.js';
-import {resolveSelection, foregroundFor} from './lib/colors.js';
+import {resolveSelection, foregroundFor, nearestSystemAccent} from './lib/colors.js';
 import {applyGtk, clearGtk} from './lib/gtkexport.js';
 import {applyFolders, clearFolders} from './lib/folders.js';
 
@@ -28,6 +28,7 @@ export default class MoreAccentColorsExtension extends Extension {
         this._foldersApplied = false;
         this._generation = 0;
         this._gtkApplied = new Set();
+        this._inApply = false;
 
         // Set while we are mutating the theme ourselves. load_stylesheet() makes
         // StTheme emit custom-stylesheets-changed, which StThemeContext turns
@@ -70,6 +71,8 @@ export default class MoreAccentColorsExtension extends Extension {
                 obj.disconnect(id);
         }
 
+        this._restoreSystemAccent();
+
         this._unloadShellStylesheet();
 
         for (const variant of this._gtkApplied)
@@ -94,6 +97,20 @@ export default class MoreAccentColorsExtension extends Extension {
     }
 
     _apply() {
+        // Writing GSettings below makes the Shell restyle, which comes back
+        // through StThemeContext::changed into this same method.
+        if (this._inApply)
+            return;
+        this._inApply = true;
+
+        try {
+            this._applyInner();
+        } finally {
+            this._inApply = false;
+        }
+    }
+
+    _applyInner() {
         const hex = resolveSelection(
             this._settings.get_string('accent-color'),
             this._settings.get_string('custom-color'));
@@ -103,6 +120,7 @@ export default class MoreAccentColorsExtension extends Extension {
             this._unloadShellStylesheet();
             this._syncGtk(null);
             this._syncFolders(null);
+            this._syncSystemAccent(null);
             return;
         }
 
@@ -113,6 +131,42 @@ export default class MoreAccentColorsExtension extends Extension {
 
         this._syncGtk(hex);
         this._syncFolders(hex);
+        this._syncSystemAccent(hex);
+    }
+
+    /**
+     * Point the system accent enum at whichever of the nine is closest, so the
+     * consumers that never read our CSS - Flatpak apps, and anything calling
+     * adw_style_manager_get_accent_color() - land somewhere near the right hue.
+     */
+    _syncSystemAccent(hex) {
+        const wanted = hex && this._settings.get_boolean('sync-system-accent');
+        const saved = this._settings.get_string('saved-system-accent');
+
+        if (wanted) {
+            const nearest = nearestSystemAccent(hex);
+            if (!nearest)
+                return;
+
+            // Only capture the user's own value, never one we injected.
+            if (!saved) {
+                this._settings.set_string('saved-system-accent',
+                    this._interfaceSettings.get_string('accent-color'));
+            }
+
+            if (this._interfaceSettings.get_string('accent-color') !== nearest)
+                this._interfaceSettings.set_string('accent-color', nearest);
+        } else if (saved) {
+            this._restoreSystemAccent();
+        }
+    }
+
+    _restoreSystemAccent() {
+        const saved = this._settings.get_string('saved-system-accent');
+        if (!saved)
+            return;
+        this._interfaceSettings.set_string('accent-color', saved);
+        this._settings.set_string('saved-system-accent', '');
     }
 
     _syncFolders(hex) {
