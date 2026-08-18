@@ -60,6 +60,15 @@
       <description>Internal. Empty when we have not overridden it.</description>
     </key>
 
+    <key name="applied-system-accent" type="s">
+      <default>''</default>
+      <summary>The system accent value written by this extension</summary>
+      <description>
+        Internal. Used to avoid overwriting a newer accent choice when restoring
+        saved-system-accent.
+      </description>
+    </key>
+
     <key name="force-important" type="b">
       <default>true</default>
       <summary>Force override with !important</summary>

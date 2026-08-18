@@ -11,7 +11,10 @@ trap 'rm -rf "$SANDBOX"' EXIT
 export XDG_CONFIG_HOME="$SANDBOX/config"
 export XDG_DATA_HOME="$SANDBOX/data"
 export XDG_CACHE_HOME="$SANDBOX/cache"
-mkdir -p "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_CACHE_HOME"
+TEST_SYSTEM_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+export XDG_DATA_DIRS="$SANDBOX/system-data:$TEST_SYSTEM_DATA_DIRS"
+mkdir -p "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_CACHE_HOME" \
+    "$SANDBOX/system-data"
 
 if ! command -v gjs >/dev/null 2>&1; then
     echo "gjs not found; install gjs to run the tests" >&2

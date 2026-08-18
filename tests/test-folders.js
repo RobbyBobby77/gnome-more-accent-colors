@@ -96,6 +96,32 @@ section('every accent stays in gamut');
         `these produced malformed output: ${bad.join(', ')}`);
 }
 
+section('unsupported themes');
+clearFolders();
+{
+    const synthetic = GLib.build_filenamev([
+        GLib.get_system_data_dirs()[0], 'icons', 'Synthetic',
+        'scalable', 'places', 'folder.svg',
+    ]);
+    GLib.mkdir_with_parents(GLib.path_get_dirname(synthetic), 0o755);
+    GLib.file_set_contents(synthetic,
+        '<svg><path fill="#112233"/><path fill="#445566"/><path fill="#778899"/></svg>');
+
+    ok('establishes generated Adwaita icons before the theme switch',
+        applyFolders('#e62d42', 'Adwaita') > 0);
+    eq('a theme with its own folder artwork is left untouched',
+        applyFolders('#e62d42', 'Synthetic'), 0);
+    ok('the unsupported theme gets no generated overlay',
+        !GLib.file_test(GLib.build_filenamev(
+            [GLib.get_user_data_dir(), 'icons', 'Synthetic']), GLib.FileTest.EXISTS));
+    ok('a failed refresh removes the previous generated icons',
+        !exists('scalable/places/folder.svg'));
+    ok('and removes their cleanup manifest',
+        !GLib.file_test(GLib.build_filenamev([
+            GLib.get_user_cache_dir(), 'more-accent-colors', 'folders.manifest',
+        ]), GLib.FileTest.EXISTS));
+}
+
 section('never clobbers the user');
 clearFolders();
 {

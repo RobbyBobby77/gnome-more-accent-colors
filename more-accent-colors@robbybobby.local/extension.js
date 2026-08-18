@@ -5,7 +5,9 @@ import St from 'gi://St';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import {buildShellStylesheet} from './lib/cssgen.js';
-import {resolveSelection, foregroundFor, nearestSystemAccent} from './lib/colors.js';
+import {
+    resolveSelection, foregroundFor, nearestSystemAccent, restorableSystemAccent,
+} from './lib/colors.js';
 import {applyGtk, clearGtk} from './lib/gtkexport.js';
 import {applyFolders, clearFolders} from './lib/folders.js';
 
@@ -60,6 +62,8 @@ export default class MoreAccentColorsExtension extends Extension {
     }
 
     disable() {
+        // The extension also runs in unlock-dialog so locking the screen does
+        // not tear down and recreate its persistent GTK and icon overrides.
         for (const [obj, id] of [
             [this._settings, this._settingsChangedId],
             [this._stSettings, this._colorSchemeId],
@@ -75,12 +79,13 @@ export default class MoreAccentColorsExtension extends Extension {
 
         this._unloadShellStylesheet();
 
-        for (const variant of this._gtkApplied)
+        // Clear marker-owned files even if they came from an earlier Shell
+        // process and are therefore absent from this instance's in-memory set.
+        for (const variant of ['gtk4', 'gtk3'])
             clearGtk(variant);
         this._gtkApplied.clear();
 
-        if (this._foldersApplied)
-            clearFolders();
+        clearFolders();
         this._foldersApplied = false;
 
         // After clearFolders, which keeps its manifest in the same directory.
@@ -154,19 +159,23 @@ export default class MoreAccentColorsExtension extends Extension {
                     this._interfaceSettings.get_string('accent-color'));
             }
 
+            this._settings.set_string('applied-system-accent', nearest);
             if (this._interfaceSettings.get_string('accent-color') !== nearest)
                 this._interfaceSettings.set_string('accent-color', nearest);
-        } else if (saved) {
+        } else if (saved || this._settings.get_string('applied-system-accent')) {
             this._restoreSystemAccent();
         }
     }
 
     _restoreSystemAccent() {
         const saved = this._settings.get_string('saved-system-accent');
-        if (!saved)
-            return;
-        this._interfaceSettings.set_string('accent-color', saved);
+        const applied = this._settings.get_string('applied-system-accent');
+        const current = this._interfaceSettings.get_string('accent-color');
+        const restore = restorableSystemAccent(saved, applied, current);
+        if (restore)
+            this._interfaceSettings.set_string('accent-color', restore);
         this._settings.set_string('saved-system-accent', '');
+        this._settings.set_string('applied-system-accent', '');
     }
 
     _syncFolders(hex) {
@@ -184,7 +193,7 @@ export default class MoreAccentColorsExtension extends Extension {
                 console.warn(`${this.metadata.name}: no recolorable folder icons found ` +
                     `for icon theme "${iconTheme}"`);
             }
-        } else if (this._foldersApplied) {
+        } else {
             clearFolders();
             this._foldersApplied = false;
         }
@@ -311,17 +320,23 @@ export default class MoreAccentColorsExtension extends Extension {
         if (signature === this._gtkSignature)
             return;
 
+        let appliedAll = true;
         for (const variant of ['gtk4', 'gtk3']) {
             if (wanted.includes(variant)) {
-                applyGtk(variant, hex, dark);
-                this._gtkApplied.add(variant);
-            } else if (this._gtkApplied.has(variant)) {
+                if (applyGtk(variant, hex, dark)) {
+                    this._gtkApplied.add(variant);
+                } else {
+                    this._gtkApplied.delete(variant);
+                    appliedAll = false;
+                }
+            } else {
                 clearGtk(variant);
                 this._gtkApplied.delete(variant);
             }
         }
 
-        this._gtkSignature = signature;
+        // A failed write must remain retryable on the next apply event.
+        this._gtkSignature = appliedAll ? signature : null;
     }
 
     _readStylesheets(files) {

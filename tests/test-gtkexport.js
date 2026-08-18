@@ -21,8 +21,26 @@ const read = path => {
     }
 };
 
+section('generated-file ownership');
+{
+    const generated = p('more-accent-colors.css');
+    GLib.mkdir_with_parents(GLib.path_get_dirname(generated), 0o755);
+    GLib.file_set_contents(generated, '/* USER OWNED */\n');
+
+    eq('apply refuses to overwrite an unowned generated filename',
+        applyGtk('gtk4', '#4f46e5', false), false);
+    eq('the unowned generated file remains byte-for-byte intact',
+        read(generated), '/* USER OWNED */\n');
+    ok('no import is installed after the ownership conflict', read(p('gtk.css')) === null);
+
+    clearGtk('gtk4');
+    eq('clear does not delete an unowned generated filename',
+        read(generated), '/* USER OWNED */\n');
+    GLib.unlink(generated);
+}
+
 section('generated file contents');
-applyGtk('gtk4', '#4f46e5', false);
+eq('a normal GTK4 apply reports success', applyGtk('gtk4', '#4f46e5', false), true);
 {
     const css = read(p('more-accent-colors.css'));
     ok('file is written', css !== null);

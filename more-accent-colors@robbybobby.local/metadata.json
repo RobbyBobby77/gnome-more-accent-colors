@@ -1,7 +1,7 @@
 {
   "uuid": "more-accent-colors@robbybobby.local",
   "name": "More Accent Colors",
-  "description": "Adds extra accent colors beyond the nine GNOME ships with, plus a custom color picker. Recolors GNOME Shell and libadwaita/GTK apps.",
+  "description": "Adds extra accent colors beyond the nine GNOME ships with, plus a custom color picker. Recolors GNOME Shell, libadwaita/GTK apps, and folder icons. Preferences can copy the optional Flatpak permission command to the clipboard.",
   "shell-version": ["50"],
   "session-modes": ["user", "unlock-dialog"],
   "settings-schema": "org.gnome.shell.extensions.more-accent-colors",

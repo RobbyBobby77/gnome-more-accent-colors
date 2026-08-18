@@ -204,6 +204,17 @@ export function nearestSystemAccent(hex) {
     return best;
 }
 
+/**
+ * Return the saved accent only while the system still holds the value we set.
+ * An empty applied value is accepted for migration from releases which only
+ * persisted saved-system-accent.
+ */
+export function restorableSystemAccent(saved, applied, current) {
+    if (!saved)
+        return null;
+    return !applied || current === applied ? saved : null;
+}
+
 /** Resolve the settings pair (accent-color, custom-color) to a hex, or null for "system". */
 export function resolveSelection(id, customHex) {
     if (id === 'system')

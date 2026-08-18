@@ -87,6 +87,20 @@ export function findFolderSource(themeNames) {
     return null;
 }
 
+/** Whether a non-Adwaita theme supplies its own scalable folder artwork. */
+function themeHasOwnFolders(theme) {
+    if (!theme || theme === 'Adwaita')
+        return false;
+
+    for (const root of systemIconDirs()) {
+        const probe = GLib.build_filenamev(
+            [root, theme, 'scalable', 'places', 'folder.svg']);
+        if (readText(probe))
+            return true;
+    }
+    return false;
+}
+
 /**
  * Map the base palette onto a new accent as an OKLCh delta: hue and chroma move
  * to the target, lightness shifts by the same amount the accent did. Keeping
@@ -162,13 +176,25 @@ function loadManifest() {
  * @returns {number} how many icons were written
  */
 export function applyFolders(accentHex, activeTheme) {
-    const source = findFolderSource([activeTheme, 'Adwaita']);
-    if (!source)
+    // Third-party themes are not necessarily based on Adwaita's blue reference
+    // palette. Recoloring their full folder.svg palette could also select
+    // unrelated icons which reuse three common colors, so leave them alone.
+    if (themeHasOwnFolders(activeTheme)) {
+        clearFolders();
         return 0;
+    }
+
+    const source = findFolderSource(['Adwaita']);
+    if (!source) {
+        clearFolders();
+        return 0;
+    }
 
     const map = buildColorMap(source.palette, accentHex);
-    if (!map)
+    if (!map) {
+        clearFolders();
         return 0;
+    }
 
     const shadowRoot = GLib.build_filenamev(
         [GLib.get_user_data_dir(), 'icons', source.theme]);

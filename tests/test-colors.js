@@ -6,6 +6,7 @@ import {
     SYSTEM_COLORS, EXTRA_COLORS, ALL_COLORS,
     parseHex, toHex, oklabLightness, hexToOklch, oklchToHex,
     foregroundFor, standaloneExpr, resolveSelection, nearestSystemAccent,
+    restorableSystemAccent,
 } from '../more-accent-colors@robbybobby.local/lib/colors.js';
 
 section('parsing');
@@ -82,6 +83,16 @@ eq('graphite -> slate', nearestSystemAccent('#5b5b66'), 'slate');
 ok('always returns one of the nine',
     EXTRA_COLORS.every(c => SYSTEM_COLORS.some(s => s.id === nearestSystemAccent(c.hex))));
 eq('invalid input is inert', nearestSystemAccent('nonsense'), null);
+
+section('system accent restoration');
+eq('restores while the applied value is still current',
+    restorableSystemAccent('blue', 'purple', 'purple'), 'blue');
+eq('preserves a newer external choice',
+    restorableSystemAccent('blue', 'purple', 'red'), null);
+eq('supports state saved by releases before applied-value tracking',
+    restorableSystemAccent('blue', '', 'purple'), 'blue');
+eq('does nothing without a saved value',
+    restorableSystemAccent('', 'purple', 'purple'), null);
 
 section('selection resolution');
 eq('system means hands off', resolveSelection('system', '#123456'), null);
