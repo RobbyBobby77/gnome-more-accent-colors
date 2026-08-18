@@ -42,8 +42,8 @@ scans for new extensions at startup and Wayland cannot reload the Shell in place
 After that:
 
 ```sh
-gnome-extensions enable more-accent-colors@robbybobby.local
-gnome-extensions prefs  more-accent-colors@robbybobby.local
+gnome-extensions enable more-accent-colors@robbybobby77.github.io
+gnome-extensions prefs  more-accent-colors@robbybobby77.github.io
 ```
 
 In the preferences window, turn on **Override the system accent color** first —
@@ -66,7 +66,7 @@ Changing colors, on the other hand, is fully live and never needs a logout.
 ### Uninstall
 
 ```sh
-gnome-extensions disable more-accent-colors@robbybobby.local   # reverts everything
+gnome-extensions disable more-accent-colors@robbybobby77.github.io   # reverts everything
 make uninstall
 ```
 
@@ -226,11 +226,11 @@ Plain `gjs`, no framework. The suite runs against a throwaway `XDG_*` root, so i
 can never touch your real `gtk.css`, icons, or settings — the filesystem suites
 refuse to start if the sandbox isn't set.
 
-```
-colors     29 passed     parsing, OKLCh round-trip, libadwaita agreement
+```text
+colors     52 passed     parsing, color math, system-accent restoration
 cssgen     36 passed     extraction, substitution, at-rules, real Shell stylesheet
-gtkexport  18 passed     config writing, user-content preservation, cleanup
-folders    23 passed     icon selection, recoloring, identity invariant, cleanup
+gtkexport  23 passed     config writing, ownership, user-content preservation
+folders    28 passed     icon selection, recoloring, theme safety, cleanup
 ```
 
 The assertions worth knowing about:
@@ -249,8 +249,8 @@ The assertions worth knowing about:
 
 ## Layout
 
-```
-more-accent-colors@robbybobby.local/
+```text
+more-accent-colors@robbybobby77.github.io/
   extension.js        apply/revert, signal wiring
   prefs.js            Adw preferences with swatch grid
   lib/colors.js       palette + OKLab/OKLCh math (shared; no Shell/Gtk imports)

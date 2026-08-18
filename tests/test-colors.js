@@ -7,7 +7,7 @@ import {
     parseHex, toHex, oklabLightness, hexToOklch, oklchToHex,
     foregroundFor, standaloneExpr, resolveSelection, nearestSystemAccent,
     restorableSystemAccent,
-} from '../more-accent-colors@robbybobby.local/lib/colors.js';
+} from '../more-accent-colors@robbybobby77.github.io/lib/colors.js';
 
 section('parsing');
 eq('parseHex 6-digit', toHex(parseHex('#4f46e5')), '#4f46e5');

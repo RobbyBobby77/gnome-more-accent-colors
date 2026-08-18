@@ -6,7 +6,7 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 import {ok, eq, skip, section, finish} from './harness.js';
-import {buildShellStylesheet} from '../more-accent-colors@robbybobby.local/lib/cssgen.js';
+import {buildShellStylesheet} from '../more-accent-colors@robbybobby77.github.io/lib/cssgen.js';
 
 const build = (css, important = false) =>
     buildShellStylesheet([css], '#ff0000', '#00ff00', important);

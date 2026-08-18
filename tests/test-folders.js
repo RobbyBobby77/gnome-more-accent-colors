@@ -5,7 +5,7 @@ import GLib from 'gi://GLib';
 
 import {ok, eq, skip, section, finish} from './harness.js';
 import {applyFolders, clearFolders, findFolderSource}
-    from '../more-accent-colors@robbybobby.local/lib/folders.js';
+    from '../more-accent-colors@robbybobby77.github.io/lib/folders.js';
 
 if (!GLib.get_user_data_dir().includes('mac-test-sandbox')) {
     printerr('refusing to run outside the sandbox; use tests/run.sh');

@@ -1,4 +1,4 @@
-UUID = more-accent-colors@robbybobby.local
+UUID = more-accent-colors@robbybobby77.github.io
 ZIP  = $(UUID).shell-extension.zip
 
 .PHONY: all test pack install uninstall enable disable prefs reload clean

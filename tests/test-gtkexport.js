@@ -4,7 +4,7 @@
 import GLib from 'gi://GLib';
 
 import {ok, eq, section, finish} from './harness.js';
-import {applyGtk, clearGtk} from '../more-accent-colors@robbybobby.local/lib/gtkexport.js';
+import {applyGtk, clearGtk} from '../more-accent-colors@robbybobby77.github.io/lib/gtkexport.js';
 
 if (!GLib.get_user_config_dir().includes('mac-test-sandbox')) {
     printerr('refusing to run outside the sandbox; use tests/run.sh');
